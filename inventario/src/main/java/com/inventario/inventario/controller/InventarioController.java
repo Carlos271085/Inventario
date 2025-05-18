@@ -37,12 +37,18 @@ public class InventarioController {
     @ApiResponse(responseCode = "200", description = "Inventario creado exitosamente")
     @ApiResponse(responseCode = "400", description = "Datos de inventario inválidos")
     @PostMapping
+    // *******Método que no me resulto******
+    // public ResponseEntity<String> crearInventario(@Valid @RequestBody Inventario
+    // inventario) {
+    // String resultado = inventarioService.crearInventario(inventario);
+    // if (resultado.startsWith("Error")) {
+    // return ResponseEntity.badRequest().body(resultado);
+    // }
+    // return ResponseEntity.ok(resultado);
+    // }
     public ResponseEntity<String> crearInventario(@Valid @RequestBody Inventario inventario) {
-        String resultado = inventarioService.crearInventario(inventario);
-        if (resultado.startsWith("Error")) {
-            return ResponseEntity.badRequest().body(resultado);
-        }
-        return ResponseEntity.ok(resultado);
+        inventarioService.crearInventario(inventario);
+        return ResponseEntity.ok("Inventario creado exitosamente");
     }
 
     @Operation(summary = "Obtener inventario por ID")
