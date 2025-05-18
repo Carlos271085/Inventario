@@ -1,6 +1,8 @@
 package com.inventario.inventario.service;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,32 +23,29 @@ public class InventarioService {
     private InventarioRepository inventariorepository;
 
     public String crearInventario(Inventario inv) {
-
         try {
             // Validar que el inventario no sea nulo y tenga datos válidos
             if (inv == null || inv.getIdProducto() <= 0 || inv.getStockDisponible() < 0
-                    || inv.getUbicacionBodega() == null || inv.getFechaUltimaActualizacion() == null) {
+                    || inv.getUbicacionBodega() == null) {
                 return "Error: Inventario no válido";
             }
+
             Boolean estado = inventariorepository.existsById(inv.getIdProducto());
             if (!estado) {
                 InventarioEntity inventarioNuevo = new InventarioEntity();
                 inventarioNuevo.setIdProducto(inv.getIdProducto());
                 inventarioNuevo.setStockDisponible(inv.getStockDisponible());
                 inventarioNuevo.setUbicacionBodega(inv.getUbicacionBodega());
-                inventarioNuevo.setFechaUltimaActualizacion(inv.getFechaUltimaActualizacion());
+                // Si no se proporciona fecha, usar la fecha actual
+                inventarioNuevo.setFechaUltimaActualizacion(
+                        inv.getFechaUltimaActualizacion() != null ? inv.getFechaUltimaActualizacion()
+                                : LocalDateTime.now());
                 inventariorepository.save(inventarioNuevo);
                 return "Inventario creado correctamente";
-
             }
             return "El inventario ya existe";
-
-        } catch (DataAccessException e) {
-            return "Error al acceder a la base de datos para el producto con ID " + inv.getIdProducto() + ": "
-                    + e.getMessage();
         } catch (Exception e) {
-            return "Error al crear el inventario para el producto con ID " + inv.getIdProducto() + ": "
-                    + e.getMessage();
+            return "Error al crear el inventario: " + e.getMessage();
         }
 
     }
@@ -137,13 +136,17 @@ public class InventarioService {
                 if (campos.containsKey("fechaUltimaActualizacion")) {
                     try {
                         if (campos.get("fechaUltimaActualizacion") instanceof String) {
+                            String fechaStr = (String) campos.get("fechaUltimaActualizacion");
+                            LocalDateTime fecha = LocalDateTime.parse(fechaStr, DateTimeFormatter.ISO_DATE_TIME);
+                            existente.setFechaUltimaActualizacion(fecha);
+                        } else if (campos.get("fechaUltimaActualizacion") instanceof LocalDateTime) {
                             existente.setFechaUltimaActualizacion(
-                                    Date.valueOf((String) campos.get("fechaUltimaActualizacion")));
+                                    (LocalDateTime) campos.get("fechaUltimaActualizacion"));
                         } else {
-                            existente.setFechaUltimaActualizacion((Date) campos.get("fechaUltimaActualizacion"));
+                            return "Error: formato de fecha no válido";
                         }
-                    } catch (IllegalArgumentException e) {
-                        return "Error: formato de fecha inválido";
+                    } catch (DateTimeParseException e) {
+                        return "Error: formato de fecha inválido. Use el formato ISO (yyyy-MM-ddTHH:mm:ss)";
                     }
                 }
                 inventariorepository.save(existente);
