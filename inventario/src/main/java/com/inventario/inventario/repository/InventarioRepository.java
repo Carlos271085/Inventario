@@ -6,13 +6,13 @@ import org.springframework.stereotype.Repository;
 import com.inventario.inventario.model.entity.InventarioEntity;
 
 import java.util.List;
-import java.util.Optional;
+//import java.util.Optional;
 
 @Repository
 public interface InventarioRepository extends JpaRepository<InventarioEntity, Long> {
 
     // Verificar existencia por ID del producto
-    Boolean existsByIdProducto(Long idProducto);
+    Boolean existsByUbicacionBodega(String ubicacionBodega);
 
     // Eliminar por Stock
     void deleteByStockDisponible(int stockDisponible);
@@ -24,12 +24,12 @@ public interface InventarioRepository extends JpaRepository<InventarioEntity, Lo
     Boolean existsByStockDisponible(int stockDisponible);
 
     // Buscar por ID del Producto
-    Optional<InventarioEntity> findByIdProducto(long idProducto);
+    List<InventarioEntity> findByIdProducto(long idProducto);
 
     // Buscar por Rango de Stock
     List<InventarioEntity> findByStockDisponibleBetween(int minStock, int maxStock);
 
     // Buscar por ubicación de bodega (contiene palabra clave)
-    List<InventarioEntity> findByUbicacionBodegaContaining(String ubicacion);
+    List<InventarioEntity> findByUbicacionBodega(String ubicacionBodega);
 
 }
