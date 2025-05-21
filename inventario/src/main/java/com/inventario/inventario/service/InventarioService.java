@@ -1,5 +1,6 @@
 package com.inventario.inventario.service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 //import java.util.Map;
@@ -77,7 +78,8 @@ public class InventarioService {
             existente.setIdProducto(inv.getIdProducto());
             existente.setStockDisponible(inv.getStockDisponible());
             existente.setUbicacionBodega(inv.getUbicacionBodega());
-            existente.setFechaUltimaActualizacion(inv.getFechaUltimaActualizacion());
+            // Actualizar la fecha automáticamente con la fecha actual
+            existente.setFechaUltimaActualizacion(LocalDateTime.now());
             inventariorepository.save(existente);
             return "Inventario actualizado correctamente";
         }
