@@ -70,20 +70,26 @@ public class InventarioService {
                 .collect(Collectors.toList());
     }
 
-    // Método permite actualizar el inventario
+    // Método Actualizar Solo el Stock disponible de un producto, aunque se
+    // modifiquen los otros valores el sistema no realizara los otros cambios.
     @Transactional
     public String actualizarInventario(long idProducto, Inventario inv) {
-        InventarioEntity existente = inventariorepository.findById(idProducto).orElse(null);
-        if (existente != null) {
-            existente.setIdProducto(inv.getIdProducto());
-            existente.setStockDisponible(inv.getStockDisponible());
-            existente.setUbicacionBodega(inv.getUbicacionBodega());
-            // Actualizar la fecha automáticamente con la fecha actual
-            existente.setFechaUltimaActualizacion(LocalDateTime.now());
-            inventariorepository.save(existente);
-            return "Inventario actualizado correctamente";
+        try {
+            InventarioEntity existente = inventariorepository.findById(idProducto).orElse(null);
+            if (existente != null) {
+                // Solo actualizar el stock disponible
+                existente.setStockDisponible(inv.getStockDisponible());
+                // Actualizar la fecha automáticamente
+                existente.setFechaUltimaActualizacion(LocalDateTime.now());
+                inventariorepository.save(existente);
+                return "Stock actualizado correctamente";
+            }
+            return "Inventario no encontrado";
+        } catch (IllegalArgumentException e) {
+            return "Error: Stock no válido";
+        } catch (Exception e) {
+            return "Error al actualizar el stock: " + e.getMessage();
         }
-        return "Inventario no encontrado";
     }
 
     // Método permite eliminar un inventario por su idProducto.
