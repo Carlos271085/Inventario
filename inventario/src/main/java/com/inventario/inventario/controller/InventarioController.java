@@ -29,7 +29,7 @@ import jakarta.validation.Valid;
 // @Tag(name = "Inventario", description = "API para gestionar inventarios")
 public class InventarioController {
 
-@Autowired
+    @Autowired
     private InventarioService inventarioService;
 
     // Creación de un nuevo Inventario.
@@ -40,44 +40,42 @@ public class InventarioController {
     @ApiResponse(responseCode = "409", description = "El inventario ya existe")
     public ResponseEntity<Map<String, String>> crearInventario(@Valid @RequestBody Inventario inventario) {
         try {
-            // Validar campos obligatorios de forma individual
-            StringBuilder mensajeError = new StringBuilder("Campos obligatorios faltantes: ");
-            boolean hayErrores = false;
-
-            if (inventario.getStockDisponible() <= 0) {
-                mensajeError.append("stock disponible debe ser mayor a 0");
-                hayErrores = true;
-            }
-            
-            if (inventario.getUbicacionBodega() == null || inventario.getUbicacionBodega().trim().isEmpty()) {
-                if (hayErrores) {
-                    mensajeError.append(" y ");
-                }
-                mensajeError.append("ubicación de bodega");
-                hayErrores = true;
-            }
-
-            if (hayErrores) {
+            // Validar que se proporcionen ambos campos obligatorios
+            if (inventario.getStockDisponible() <= 0 &&
+                    (inventario.getUbicacionBodega() == null || inventario.getUbicacionBodega().trim().isEmpty())) {
                 return ResponseEntity
                         .badRequest()
-                        .body(Map.of("error", mensajeError.toString()));
+                        .body(Map.of("error", "El stock disponible y la ubicación de bodega son campos obligatorios"));
+            }
+
+            // Validar campos individualmente para mensajes específicos
+            if (inventario.getStockDisponible() <= 0) {
+                return ResponseEntity
+                        .badRequest()
+                        .body(Map.of("error", "El stock disponible debe ser mayor a 0"));
+            }
+
+            if (inventario.getUbicacionBodega() == null || inventario.getUbicacionBodega().trim().isEmpty()) {
+                return ResponseEntity
+                        .badRequest()
+                        .body(Map.of("error", "La ubicación de bodega es obligatoria"));
             }
 
             // Establecer fecha actual automáticamente
             inventario.setFechaUltimaActualizacion(LocalDateTime.now());
-            
+
             String resultado = inventarioService.crearInventario(inventario);
-            
+
             if (resultado.contains("ya existe")) {
                 return ResponseEntity
                         .status(HttpStatus.CONFLICT)
                         .body(Map.of("error", resultado));
             }
-            
+
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(Map.of("mensaje", resultado));
-                    
+
         } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -86,10 +84,10 @@ public class InventarioController {
     }
 
     // Eliminación de un Inventario.
-    @DeleteMapping("/{idProducto}")
+    @DeleteMapping("/{idInventario}")
     @Operation(summary = "Eliminar un inventario existente")
-    public ResponseEntity<String> eliminarInventario(@PathVariable Long idProducto) {
-        String resultado = inventarioService.eliminarInventario(idProducto);
+    public ResponseEntity<String> eliminarInventario(@PathVariable Long idInventario) {
+        String resultado = inventarioService.eliminarInventario(idInventario);
         if (resultado.contains("eliminado correctamente")) {
             return ResponseEntity.ok(resultado);
         }
@@ -97,23 +95,23 @@ public class InventarioController {
     }
 
     // Actualizacion de un Inventario.
-    @PutMapping("/{idProducto}")
-    @Operation(summary = "Actualizar stock disponible en un inventario existente")
-    @ApiResponse(responseCode = "200", description = "Inventario actualizado exitosamente")
+    @PutMapping("/{idInventario}")
+    @Operation(summary = "Actualizar solo el stock disponible de un inventario")
+    @ApiResponse(responseCode = "200", description = "Stock actualizado exitosamente")
     @ApiResponse(responseCode = "404", description = "Inventario no encontrado")
-    @ApiResponse(responseCode = "400", description = "Datos de inventario inválidos")
+    @ApiResponse(responseCode = "400", description = "Stock inválido")
     public ResponseEntity<Map<String, String>> actualizarInventario(
-            @PathVariable long idProducto,
+            @PathVariable long idInventario,
             @Valid @RequestBody Inventario inventario) {
         try {
-            // Validar que el ID del path coincida con el ID del objeto
-            if (inventario.getIdProducto() != idProducto) {
+            // Validar que el stock sea válido
+            if (inventario.getStockDisponible() <= 0) {
                 return ResponseEntity
                         .badRequest()
-                        .body(Map.of("error", "El ID del path no coincide con el ID del inventario"));
+                        .body(Map.of("error", "El stock debe ser mayor a 0"));
             }
 
-            String resultado = inventarioService.actualizarInventario(idProducto, inventario);
+            String resultado = inventarioService.actualizarInventario(idInventario, inventario);
 
             if (resultado.equals("Inventario no encontrado")) {
                 return ResponseEntity
@@ -121,16 +119,12 @@ public class InventarioController {
                         .body(Map.of("error", "Inventario no encontrado"));
             }
 
-            return ResponseEntity.ok(Map.of("mensaje", "Inventario actualizado exitosamente"));
+            return ResponseEntity.ok(Map.of("mensaje", "Stock actualizado correctamente"));
 
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al actualizar el inventario: " + e.getMessage()));
+                    .body(Map.of("error", "Error al actualizar el stock: " + e.getMessage()));
         }
     }
 
@@ -139,10 +133,12 @@ public class InventarioController {
     @Operation(summary = "Obtener inventarios por ubicación de bodega")
     @ApiResponse(responseCode = "200", description = "Inventarios encontrados")
     @ApiResponse(responseCode = "404", description = "No se encontraron inventarios en esa ubicación")
-    public ResponseEntity<List<Inventario>> obtenerInventarioPorUbicacion(@PathVariable String ubicacionBodega) {
+    public ResponseEntity<?> obtenerInventarioPorUbicacion(@PathVariable String ubicacionBodega) {
         List<Inventario> inventarios = inventarioService.obtenerInventarioPorUbicacion(ubicacionBodega);
         if (inventarios == null || inventarios.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("mensaje", "No se encontraron inventarios en la ubicación: " + ubicacionBodega));
         }
         return ResponseEntity.ok(inventarios);
     }

@@ -24,7 +24,7 @@ public class InventarioService {
 
     @Transactional
     public String crearInventario(Inventario inv) {
-        if (inventariorepository.existsById(inv.getIdProducto())) {
+        if (inventariorepository.existsById(inv.getIdInventario())) {
             return "El inventario ya existe";
         }
         InventarioEntity inventarioNuevo = mapToEntity(inv);
@@ -49,7 +49,7 @@ public class InventarioService {
             List<InventarioEntity> entidades = inventariorepository.findAll();
             return entidades.stream()
                     .map(entidad -> new Inventario(
-                            entidad.getIdProducto(),
+                            entidad.getIdInventario(),
                             entidad.getStockDisponible(),
                             entidad.getUbicacionBodega(),
                             entidad.getFechaUltimaActualizacion()))
@@ -70,9 +70,9 @@ public class InventarioService {
     // Método Actualizar Solo el Stock disponible de un producto, aunque se
     // modifiquen los otros valores el sistema no realizara los otros cambios.
     @Transactional
-    public String actualizarInventario(long idProducto, Inventario inv) {
+    public String actualizarInventario(long idInventario, Inventario inv) {
         try {
-            InventarioEntity existente = inventariorepository.findById(idProducto).orElse(null);
+            InventarioEntity existente = inventariorepository.findById(idInventario).orElse(null);
             if (existente != null) {
                 // Solo actualizar el stock disponible
                 existente.setStockDisponible(inv.getStockDisponible());
@@ -91,8 +91,8 @@ public class InventarioService {
 
     // Método permite eliminar un inventario por su idProducto.
     @Transactional
-    public String eliminarInventario(long idProducto) {
-        InventarioEntity existente = inventariorepository.findById(idProducto).orElse(null);
+    public String eliminarInventario(long idInventario) {
+        InventarioEntity existente = inventariorepository.findById(idInventario).orElse(null);
         if (existente != null) {
             inventariorepository.delete(existente);
             return "Inventario eliminado correctamente";
@@ -103,7 +103,7 @@ public class InventarioService {
     // Métodos auxiliares para mapear entre Inventario e InventarioEntity
     private InventarioEntity mapToEntity(Inventario inv) {
         InventarioEntity entity = new InventarioEntity();
-        entity.setIdProducto(inv.getIdProducto());
+        entity.setIdInventario(inv.getIdInventario());
         entity.setStockDisponible(inv.getStockDisponible());
         entity.setUbicacionBodega(inv.getUbicacionBodega());
         entity.setFechaUltimaActualizacion(inv.getFechaUltimaActualizacion());
@@ -112,27 +112,12 @@ public class InventarioService {
 
     private Inventario mapToModel(InventarioEntity entity) {
         return new Inventario(
-                entity.getIdProducto(),
+                entity.getIdInventario(),
                 entity.getStockDisponible(),
                 entity.getUbicacionBodega(),
                 entity.getFechaUltimaActualizacion()
 
         );
-    }
-
-    // Método permite verificar si hay suficiente Stock disponible de un producto.
-    public boolean verificarStock(long idProducto, int cantidadRequerida) {
-        try {
-            InventarioEntity inventario = inventariorepository.findById(idProducto).orElse(null);
-            if (inventario != null) {
-                return inventario.getStockDisponible() >= cantidadRequerida;
-            }
-            return false;
-        } catch (DataAccessException e) {
-            return false;
-        } catch (Exception e) {
-            return false;
-        }
     }
 
 }

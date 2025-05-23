@@ -24,10 +24,7 @@ public interface InventarioRepository extends JpaRepository<InventarioEntity, Lo
     Boolean existsByStockDisponible(int stockDisponible);
 
     // Buscar por ID del Producto
-    List<InventarioEntity> findByIdProducto(long idProducto);
-
-    // Buscar por Rango de Stock
-    List<InventarioEntity> findByStockDisponibleBetween(int minStock, int maxStock);
+    List<InventarioEntity> findByIdInventario(long idInventario);
 
     // Buscar por ubicación de bodega (contiene palabra clave)
     List<InventarioEntity> findByUbicacionBodega(String ubicacionBodega);

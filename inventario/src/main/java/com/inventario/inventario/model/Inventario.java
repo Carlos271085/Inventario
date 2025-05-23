@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 
 public class Inventario {
 
-    private long idProducto; // Se declara atributo de int a long para manejar valores más grandes
+    private long idInventario; // Se declara atributo de int a long para manejar valores más grandes
 
     @PositiveOrZero(message = "El stock no puede ser negativo")
     private int stockDisponible;

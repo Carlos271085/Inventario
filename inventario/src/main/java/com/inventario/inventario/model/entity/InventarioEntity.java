@@ -14,7 +14,7 @@ import lombok.Data;
 public class InventarioEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long idProducto;
+    private long idInventario;
 
     @Column(name = "stockDisponible")
     private int stockDisponible;
