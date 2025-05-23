@@ -52,7 +52,8 @@ public class InventarioController {
             if (inventario.getStockDisponible() <= 0) {
                 return ResponseEntity
                         .badRequest()
-                        .body(Map.of("error", "El stock disponible debe ser mayor a 0"));
+                        .body(Map.of("error",
+                                "El stock disponible debes ingresarlo obligatoriamente, o debe ser mayor a 0"));
             }
 
             if (inventario.getUbicacionBodega() == null || inventario.getUbicacionBodega().trim().isEmpty()) {
@@ -79,11 +80,12 @@ public class InventarioController {
         } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al crear el inventario: " + e.getMessage()));
+                    .body(Map.of("error",
+                            "Error al crear el inventario: El Id se genera de forma automatica " + e.getMessage()));
         }
     }
 
-    // Eliminación de un Inventario.
+    // Eliminación de un Inventario por su Id.
     @DeleteMapping("/{idInventario}")
     @Operation(summary = "Eliminar un inventario existente")
     public ResponseEntity<String> eliminarInventario(@PathVariable Long idInventario) {
@@ -94,7 +96,7 @@ public class InventarioController {
         return ResponseEntity.status(404).body(resultado);
     }
 
-    // Actualizacion de un Inventario.
+    // Actualizacion del stock de un Inventario.
     @PutMapping("/{idInventario}")
     @Operation(summary = "Actualizar solo el stock disponible de un inventario")
     @ApiResponse(responseCode = "200", description = "Stock actualizado exitosamente")
@@ -128,7 +130,7 @@ public class InventarioController {
         }
     }
 
-    // Ubicación de una Bodega.
+    // Obtener Inventarios por Ubicación de una Bodega.
     @GetMapping("/ubicacion/{ubicacionBodega}")
     @Operation(summary = "Obtener inventarios por ubicación de bodega")
     @ApiResponse(responseCode = "200", description = "Inventarios encontrados")
