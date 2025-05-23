@@ -1,5 +1,6 @@
 package com.inventario.inventario.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -24,20 +25,49 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/inventarios")
+@RequestMapping("api/v1/inventarios")
 // @Tag(name = "Inventario", description = "API para gestionar inventarios")
 public class InventarioController {
 
-    @Autowired
+@Autowired
     private InventarioService inventarioService;
 
     // Creación de un nuevo Inventario.
     @PostMapping
     @Operation(summary = "Crear un nuevo inventario")
+    @ApiResponse(responseCode = "201", description = "Inventario creado exitosamente")
+    @ApiResponse(responseCode = "400", description = "Datos de inventario inválidos o incompletos")
+    @ApiResponse(responseCode = "409", description = "El inventario ya existe")
+    public ResponseEntity<Map<String, String>> crearInventario(@Valid @RequestBody Inventario inventario) {
+        try {
+            // Validar campos obligatorios
+            if (inventario.getStockDisponible() <= 0 || inventario.getUbicacionBodega() == null 
+                || inventario.getUbicacionBodega().trim().isEmpty()) {
+                return ResponseEntity
+                        .badRequest()
+                        .body(Map.of("error", "Stock disponible y ubicación de bodega son obligatorios"));
+            }
 
-    public ResponseEntity<String> crearInventario(@Valid @RequestBody Inventario inventario) {
-        inventarioService.crearInventario(inventario);
-        return ResponseEntity.ok("Inventario creado exitosamente");
+            // Establecer fecha actual automáticamente
+            inventario.setFechaUltimaActualizacion(LocalDateTime.now());
+            
+            String resultado = inventarioService.crearInventario(inventario);
+            
+            if (resultado.contains("ya existe")) {
+                return ResponseEntity
+                        .status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", resultado));
+            }
+            
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(Map.of("mensaje", resultado));
+                    
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al crear el inventario: " + e.getMessage()));
+        }
     }
 
     // Eliminación de un Inventario.
@@ -53,7 +83,7 @@ public class InventarioController {
 
     // Actualizacion de un Inventario.
     @PutMapping("/{idProducto}")
-    @Operation(summary = "Actualizar un inventario existente")
+    @Operation(summary = "Actualizar stock disponible en un inventario existente")
     @ApiResponse(responseCode = "200", description = "Inventario actualizado exitosamente")
     @ApiResponse(responseCode = "404", description = "Inventario no encontrado")
     @ApiResponse(responseCode = "400", description = "Datos de inventario inválidos")
