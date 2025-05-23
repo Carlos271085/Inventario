@@ -3,7 +3,7 @@ package com.inventario.inventario.service;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-//import java.util.Map;
+
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +16,9 @@ import com.inventario.inventario.repository.InventarioRepository;
 
 import jakarta.transaction.Transactional;
 
-//import java.time.LocalDateTime;
-//import java.time.format.DateTimeFormatter;
-//import java.time.format.DateTimeParseException;
-
 @Service
 public class InventarioService {
+
     @Autowired
     private InventarioRepository inventariorepository;
 
@@ -137,4 +134,5 @@ public class InventarioService {
             return false;
         }
     }
+
 }
