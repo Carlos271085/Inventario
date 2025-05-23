@@ -40,12 +40,27 @@ public class InventarioController {
     @ApiResponse(responseCode = "409", description = "El inventario ya existe")
     public ResponseEntity<Map<String, String>> crearInventario(@Valid @RequestBody Inventario inventario) {
         try {
-            // Validar campos obligatorios
-            if (inventario.getStockDisponible() <= 0 || inventario.getUbicacionBodega() == null 
-                || inventario.getUbicacionBodega().trim().isEmpty()) {
+            // Validar campos obligatorios de forma individual
+            StringBuilder mensajeError = new StringBuilder("Campos obligatorios faltantes: ");
+            boolean hayErrores = false;
+
+            if (inventario.getStockDisponible() <= 0) {
+                mensajeError.append("stock disponible debe ser mayor a 0");
+                hayErrores = true;
+            }
+            
+            if (inventario.getUbicacionBodega() == null || inventario.getUbicacionBodega().trim().isEmpty()) {
+                if (hayErrores) {
+                    mensajeError.append(" y ");
+                }
+                mensajeError.append("ubicación de bodega");
+                hayErrores = true;
+            }
+
+            if (hayErrores) {
                 return ResponseEntity
                         .badRequest()
-                        .body(Map.of("error", "Stock disponible y ubicación de bodega son obligatorios"));
+                        .body(Map.of("error", mensajeError.toString()));
             }
 
             // Establecer fecha actual automáticamente
