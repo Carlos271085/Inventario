@@ -53,7 +53,7 @@ public class InventarioController {
                 return ResponseEntity
                         .badRequest()
                         .body(Map.of("error",
-                                "El stock disponible debes ingresarlo obligatoriamente, o debe ser mayor a 0"));
+                                "El stock disponible debes ingresarlo obligatoriamente"));
             }
 
             if (inventario.getUbicacionBodega() == null || inventario.getUbicacionBodega().trim().isEmpty()) {
