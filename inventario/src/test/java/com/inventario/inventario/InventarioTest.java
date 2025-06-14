@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -69,19 +70,60 @@ public class InventarioTest {
     }
 
     @Test
+    public void testActualizarInventario_Exitoso() {
+        // Configurar datos de prueba
+        InventarioEntity inventarioExistente = new InventarioEntity();
+        inventarioExistente.setIdInventario(1L);
+        inventarioExistente.setStockDisponible(100);
+        inventarioExistente.setUbicacionBodega("Viña del Mar");
+        inventarioExistente.setFechaUltimaActualizacion(LocalDateTime.now());
+
+        Inventario inventarioActualizado = new Inventario();
+        inventarioActualizado.setStockDisponible(150);
+
+        // Configurar comportamiento del mock
+        when(inventarioRepository.findById(1L)).thenReturn(Optional.of(inventarioExistente));
+        when(inventarioRepository.save(any(InventarioEntity.class))).thenReturn(inventarioExistente);
+
+        // Ejecutar el método
+        String resultado = inventarioService.actualizarInventario(1L, inventarioActualizado);
+
+        // Verificar resultado
+        assertEquals("Stock actualizado correctamente", resultado);
+        verify(inventarioRepository).findById(1L);
+        verify(inventarioRepository).save(any(InventarioEntity.class));
+    }
+
+    /*
+     * @Test
+     * public void testActualizarInventario_NoEncontrado() {
+     * // Configurar comportamiento del mock para inventario no encontrado
+     * when(inventarioRepository.findById(99L)).thenReturn(Optional.empty());
+     * 
+     * // Ejecutar el método
+     * String resultado = inventarioService.actualizarInventario(99L, inventario);
+     * 
+     * // Verificar resultado
+     * assertEquals("Inventario no encontrado", resultado);
+     * verify(inventarioRepository).findById(99L);
+     * verify(inventarioRepository).save(any(InventarioEntity.class));
+     * }
+     */
+
+    @Test
     public void testBorrarInventario() {
         // Configurar el mock para simular que el inventario existe
         when(inventarioRepository.existsById(1L)).thenReturn(true);
-        
+
         // Configurar el mock para devolver el inventario antes de eliminarlo
         when(inventarioRepository.findById(1L)).thenReturn(Optional.of(inventarioEntity));
-        
+
         // Configurar el comportamiento del método deleteById
         doNothing().when(inventarioRepository).deleteById(1L);
-        
+
         // Ejecutar el método a probar
         String result = inventarioService.eliminarInventario(1L);
-        
+
         // Verificar el resultado
         assertEquals("Inventario eliminado correctamente", result);
     }
@@ -90,10 +132,10 @@ public class InventarioTest {
     public void testBorrarInventarioNoExistente() {
         // Configurar el mock para simular que el inventario no existe
         when(inventarioRepository.existsById(99L)).thenReturn(false);
-        
+
         // Ejecutar el método a probar
         String result = inventarioService.eliminarInventario(99L);
-        
+
         // Verificar el resultado
         assertEquals("Inventario no encontrado", result);
     }
