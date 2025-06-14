@@ -3,12 +3,16 @@ package com.inventario.inventario;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -138,5 +142,40 @@ public class InventarioTest {
 
         // Verificar el resultado
         assertEquals("Inventario no encontrado", result);
+    }
+
+    @Test
+    public void testObtenerInventarioPorUbicacion_Encontrado() {
+        // Preparar datos de prueba
+        List<InventarioEntity> inventariosEncontrados = Arrays.asList(inventarioEntity);
+
+        // Configurar el mock
+        when(inventarioRepository.findByUbicacionBodega("Viña del Mar"))
+                .thenReturn(inventariosEncontrados);
+
+        // Ejecutar el método
+        List<Inventario> resultado = inventarioService.obtenerInventarioPorUbicacion("Viña del Mar");
+
+        // Verificar resultados
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        assertEquals("Viña del Mar", resultado.get(0).getUbicacionBodega());
+        assertEquals(100, resultado.get(0).getStockDisponible());
+        verify(inventarioRepository).findByUbicacionBodega("Viña del Mar");
+    }
+
+    @Test
+    public void testObtenerInventarioPorUbicacion_NoEncontrado() {
+        // Configurar el mock para retornar lista vacía
+        when(inventarioRepository.findByUbicacionBodega("Ubicación Inexistente"))
+                .thenReturn(Collections.emptyList());
+
+        // Ejecutar el método
+        List<Inventario> resultado = inventarioService.obtenerInventarioPorUbicacion("Ubicación Inexistente");
+
+        // Verificar resultados
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty());
+        verify(inventarioRepository).findByUbicacionBodega("Ubicación Inexistente");
     }
 }
