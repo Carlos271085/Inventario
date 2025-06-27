@@ -9,15 +9,15 @@ jobs:
 
     steps:
 
-    -name: Obtener codigo y chequear repo
+    - name: Obtener codigo y chequear repo
       uses: actions/checkout@v2
 
-    -name: configurar java con temuin jdk 17
+    - name: configurar java con temuin jdk 17
       uses: actions/setup-java@v2
       with:
         java-version: '17'
         distribution: 'temurin'
 
-    -name: test code java spring boot
+    - name: test code java spring boot
       run: |
         ./mvnw clean test 
