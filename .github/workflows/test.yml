@@ -1,4 +1,4 @@
-name: maquinaJava
+name: test-java
 on:
   push:
     branches:
