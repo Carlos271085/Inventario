@@ -20,4 +20,5 @@ jobs:
 
     - name: test code java spring boot
       run: |
+        cd inventario
         ./mvnw clean test 
