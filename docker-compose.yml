@@ -4,5 +4,5 @@ services:
       context: .
       dockerfile: dockerfile
     ports:
-      - "8080:8083"
+      - "8083:8083"
     command: [ "java", "-jar", "app.jar" ]
