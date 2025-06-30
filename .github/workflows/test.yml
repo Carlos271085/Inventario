@@ -18,6 +18,9 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Dar permisos a mvnw
+      run : chmod +x inventario/mvnw 
+
     - name: test code java spring boot
       run: |
         cd inventario
